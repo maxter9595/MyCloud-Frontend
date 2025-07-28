@@ -5,7 +5,7 @@ import axios from 'axios';
  * configuration for API requests
  */
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_BASE_URL || 'http://localhost:8000/api',
+  baseURL: process.env.REACT_API_BASE_URL || 'http://localhost:8000/api',
   withCredentials: true,
   headers: {
     'Accept': 'application/json',
@@ -24,7 +24,7 @@ const api = axios.create({
 const getCSRFToken = async () => {
   try {
     await axios.get(
-    `${process.env.REACT_APP_API_BASE_URL || 'http://localhost:8000/api'}/auth/csrf/`,
+    `${process.env.REACT_API_BASE_URL || 'http://localhost:8000/api'}/auth/csrf/`,
     {
       withCredentials: true
     });

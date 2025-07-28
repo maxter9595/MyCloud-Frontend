@@ -120,21 +120,45 @@ const FileItem = ({ file }) => {
    * to the console.
    * @returns {void}
    */
-  const copyDownloadLink = () => {
-    const downloadLink = `${process.env.REACT_APP_API_BASE_URL || 'http://localhost:8000/api'}/storage/shared/${file.shared_link}`;
+  const copyDownloadLink = async () => {
+    const apiBase = process.env.REACT_API_BASE_URL || window.location.origin + '/api';
+    
+    const downloadLink = `${apiBase}/storage/shared/${file.shared_link}`;
+    const downloadLinkWithSlash = `${downloadLink}/`;
+    
+    console.log('Формируем ссылки:', { 
+      original: downloadLink,
+      withSlash: downloadLinkWithSlash 
+    });
 
-    navigator.clipboard.writeText(downloadLink)
-      .then(() => {
-        alert(
-          'Ссылка на скачивание скопирована в буфер обмена'
-        );
-      })  // This closing parenthesis was missing
-      .catch(err => {
-        console.error(
-          'Ошибка при копировании ссылки:', 
-          err
-        );
-      });
+    try {
+      await navigator.clipboard.writeText(downloadLinkWithSlash);
+      alert('Ссылка скопирована!');
+      
+    } catch (err) {
+      console.error('Ошибка копирования (Clipboard API):', err);
+      
+      try {
+        const textarea = document.createElement('textarea');
+        textarea.value = downloadLinkWithSlash;
+        textarea.style.position = 'fixed';
+        document.body.appendChild(textarea);
+        textarea.select();
+        
+        const success = document.execCommand('copy');
+        document.body.removeChild(textarea);
+        
+        if (success) {
+          alert('Ссылка скопирована (старый метод)');
+        } else {
+          throw new Error('execCommand не сработал');
+        }
+        
+      } catch (fallbackError) {
+        console.error('Ошибка fallback-копирования:', fallbackError);
+        alert(`Не удалось скопировать автоматически. Ссылка: ${downloadLink}`);
+      }
+    }
   };
 
   return (

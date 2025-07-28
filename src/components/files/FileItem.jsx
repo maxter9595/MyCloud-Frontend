@@ -149,7 +149,7 @@ const FileItem = ({ file }) => {
         document.body.removeChild(textarea);
         
         if (success) {
-          alert('Ссылка скопирована (старый метод)');
+          alert('Ссылка скопирована');
         } else {
           throw new Error('execCommand не сработал');
         }

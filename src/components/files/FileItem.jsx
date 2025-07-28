@@ -121,11 +121,11 @@ const FileItem = ({ file }) => {
    * @returns {void}
    */
   const copyDownloadLink = async () => {
-    const apiBase = process.env.REACT_API_BASE_URL || window.location.origin + '/api';
+    const apiBase = process.env.REACT_APP_API_BASE_URL;
     
     const downloadLink = `${apiBase}/storage/shared/${file.shared_link}`;
     const downloadLinkWithSlash = `${downloadLink}/`;
-    
+
     console.log('Формируем ссылки:', { 
       original: downloadLink,
       withSlash: downloadLinkWithSlash 
@@ -151,7 +151,7 @@ const FileItem = ({ file }) => {
         if (success) {
           alert('Ссылка скопирована');
         } else {
-          throw new Error('execCommand не сработал');
+          alert(`Ссылка для скачивания файла: ${downloadLink}`);
         }
         
       } catch (fallbackError) {

@@ -21,7 +21,7 @@ const HomePage = () => {
   return (
     <main className="home-page">
       <img src={Cloud} alt="Cloud" className="cloud-bg" />
-      <h1>Добро пожаловать в MyCloud</h1>
+      <h1>Добро пожаловать в MyCloud Store</h1>
       <p>Безопасное облачное хранилище для ваших файлов</p>
 
       {!isAuthenticated && (

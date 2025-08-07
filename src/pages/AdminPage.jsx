@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { FaPlus, FaKey } from 'react-icons/fa';
 import { useMediaQuery } from 'react-responsive';
 import { useSelector, useDispatch } from 'react-redux';
@@ -28,6 +28,7 @@ import CreateAdminForm from '../components/admin/CreateAdminForm';
  */
 const AdminPage = () => {
   const dispatch = useDispatch();
+  const abortControllerRef = useRef(null);
   
   const { users, loading } = useSelector(
     (state) => state.users
@@ -63,6 +64,19 @@ const AdminPage = () => {
 
   useEffect(() => {
     dispatch(fetchUsers());
+  }, [dispatch]);
+
+  useEffect(() => {
+    abortControllerRef.current = new AbortController();
+    const signal = abortControllerRef.current.signal;
+    
+    dispatch(fetchUsers(signal));
+
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
   }, [dispatch]);
 
   const regularUsers = users.filter(

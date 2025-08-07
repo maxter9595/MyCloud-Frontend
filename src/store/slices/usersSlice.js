@@ -11,12 +11,10 @@ import api from '../../api/users';
  */
 export const fetchUsers = createAsyncThunk(
   'users/fetchUsers',
-
-  async (_, { rejectWithValue }) => {
+  async (_, { rejectWithValue, signal }) => {
     try {
-      const response = await api.getUsers();
+      const response = await api.get('/auth/users/', { signal });
       return response.data;
-
     } catch (err) {
       return rejectWithValue(err.response.data);
     }
@@ -32,12 +30,10 @@ export const fetchUsers = createAsyncThunk(
  */
 export const deleteUser = createAsyncThunk(
   'users/deleteUser',
-
-  async (id, { rejectWithValue }) => {
+  async (id, { rejectWithValue, signal }) => {
     try {
-      await api.deleteUser(id);
+      await api.delete(`/auth/users/${id}/`, { signal });
       return id;
-
     } catch (err) {
       return rejectWithValue(err.response.data);
     }
@@ -55,12 +51,10 @@ export const deleteUser = createAsyncThunk(
  */
 export const updateUser = createAsyncThunk(
   'users/updateUser',
-
-  async ({ id, data }, { rejectWithValue }) => {
+  async ({ id, data }, { rejectWithValue, signal }) => {
     try {
-      const response = await api.updateUser(id, data);
+      const response = await api.patch(`/auth/users/${id}/`, data, { signal });
       return response.data;
-
     } catch (err) {
       return rejectWithValue(err.response.data);
     }

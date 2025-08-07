@@ -14,23 +14,17 @@ import api from '../../api/auth';
  */
 export const register = createAsyncThunk(
   'auth/register',
-
-  async (userData, { rejectWithValue }) => {
+  async (userData, { rejectWithValue, signal }) => {
     try {
-      const response = await api.register(userData);
-      localStorage.setItem(
-        'token',
-        response.data.token
-      );
+      const response = await api.post('/auth/register/', userData, { signal });
+      localStorage.setItem('token', response.data.token);
       return response.data;
-
     } catch (err) {
-      return rejectWithValue(
-        err.response?.data || 'Ошибка регистрации'
-      );
+      return rejectWithValue(err.response?.data || 'Ошибка регистрации');
     }
   }
 );
+
 
 /**
  * Authenticates a user.
@@ -44,20 +38,17 @@ export const register = createAsyncThunk(
  */
 export const fetchCurrentUser = createAsyncThunk(
   'auth/fetchCurrentUser',
-
-  async (_, { rejectWithValue }) => {
+  async (_, { rejectWithValue, signal }) => {
     try {
-      const response = await api.getMe();
+      const response = await api.get('/auth/users/me/', { signal });
       return response.data;
-
     } catch (err) {
       localStorage.removeItem('token');
-      return rejectWithValue(
-        err.response?.data || 'Ошибка получения данных пользователя'
-      );
+      return rejectWithValue(err.response?.data || 'Ошибка получения данных пользователя');
     }
   }
 );
+
 
 /**
  * Fetches the current user's data using the stored token.
@@ -67,25 +58,18 @@ export const fetchCurrentUser = createAsyncThunk(
  */
 export const login = createAsyncThunk(
   'auth/login',
-  
-  async (credentials, { rejectWithValue }) => {
+  async (credentials, { rejectWithValue, signal }) => {
     try {
-      const response = await api.login(credentials);
-      localStorage.setItem(
-        'token', 
-        response.data.token
-      );
+      const response = await api.post('/auth/login/', credentials, { signal });
+      localStorage.setItem('token', response.data.token);
       return response.data;
-
     } catch (err) {
-      const errorMessage = "Invalid credentials or your " +
-        "account has been deactivated. If your account is " +
-        "deactivated, please contact the administrator at " +
-        "admin@mail.ru";
+      const errorMessage = "Invalid credentials or your account has been deactivated. Please contact the administrator at admin@mail.ru";
       return rejectWithValue(errorMessage);
     }
   }
 );
+
 
 /**
  * Redux slice for authentication state management.

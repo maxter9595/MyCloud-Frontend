@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Routes, Route, useNavigate } from 'react-router-dom';
 
@@ -27,18 +27,22 @@ import {
 function App() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const abortControllerRef = useRef(null);
 
   const { isAuthenticated } = useSelector(
     (state) => state.auth
   );
 
   useEffect(() => {
+    abortControllerRef.current = new AbortController();
+    const signal = abortControllerRef.current.signal;
+    
     const token = localStorage.getItem('token');
 
     if (token && !isAuthenticated) {
-      dispatch(fetchCurrentUser());
+      dispatch(fetchCurrentUser(signal));
 
-      api.get('/auth/users/me/')
+      api.get('/auth/users/me/', { signal })
         .then(response => {
           dispatch(setUser(response.data));
 
@@ -48,11 +52,16 @@ function App() {
             navigate('/storage');
           }
         })
-
         .catch(() => {
           localStorage.removeItem('token');
         });
     }
+
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
   }, [
     dispatch, 
     isAuthenticated, 

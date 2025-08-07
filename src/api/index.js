@@ -43,6 +43,7 @@ getCSRFToken();
  * Request interceptor that:
  * 1. Adds Authorization header if token exists
  * 2. Handles CSRF token for non-GET requests
+ * 3. Adds AbortSignal to requests
  */
 api.interceptors.request.use(async (config) => {
   const token = localStorage.getItem('token');
@@ -56,15 +57,18 @@ api.interceptors.request.use(async (config) => {
 
     if (csrfToken) {
       config.headers['X-CSRFToken'] = csrfToken;
-
     } else {
       await getCSRFToken();
       const newCsrfToken = getCookie('csrftoken');
-
       if (newCsrfToken) {
         config.headers['X-CSRFToken'] = newCsrfToken;
       }
     }
+  }
+
+  // Добавляем AbortSignal если он передан в config
+  if (config.signal) {
+    config.signal = config.signal;
   }
 
   return config;

@@ -1,6 +1,6 @@
 import { useDropzone } from 'react-dropzone';
 import { useSelector, useDispatch } from 'react-redux';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 
 import FileList from '../components/files/FileList';
 import StorageInfo from '../components/files/StorageInfo';
@@ -21,6 +21,7 @@ import { fetchFiles, uploadFile } from '../store/slices/filesSlice';
  */
 const StoragePage = () => {
   const dispatch = useDispatch();
+  const abortControllerRef = useRef(null);
 
   const {
     files,
@@ -47,6 +48,17 @@ const StoragePage = () => {
 
   useEffect(() => {
     dispatch(fetchFiles());
+  }, [dispatch]);
+
+  useEffect(() => {
+    abortControllerRef.current = new AbortController();
+    const signal = abortControllerRef.current.signal;
+    
+    dispatch(fetchFiles({ signal }));
+
+    return () => {
+      abortControllerRef.current.abort();
+    };
   }, [dispatch]);
 
   const onDrop = useCallback((acceptedFiles) => {

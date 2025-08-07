@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useSelector, useDispatch  } from 'react-redux';
 
 import { fetchCurrentUser } from '../../store/slices/authSlice';
@@ -21,17 +21,30 @@ import { fetchCurrentUser } from '../../store/slices/authSlice';
  */
 const StorageInfo = () => {
   const dispatch = useDispatch();
+  const intervalRef = useRef(null);
+  const abortControllerRef = useRef(null);
+
   const { user } = useSelector(
     (state) => state.auth
   );
 
   useEffect(() => {
     if (user) {
-      const interval = setInterval(() => {
-        dispatch(fetchCurrentUser());
+      abortControllerRef.current = new AbortController();
+      const signal = abortControllerRef.current.signal;
+      
+      intervalRef.current = setInterval(() => {
+        dispatch(fetchCurrentUser(signal));
       }, 3000);
 
-      return () => clearInterval(interval);
+      return () => {
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current);
+        }
+        if (abortControllerRef.current) {
+          abortControllerRef.current.abort();
+        }
+      };
     }
   }, [
     dispatch, 

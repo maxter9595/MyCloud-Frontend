@@ -14,20 +14,17 @@ import api from '../../api/files';
  */
 export const fetchFiles = createAsyncThunk(
   'files/fetchFiles',
-
-  async (userId, { rejectWithValue }) => {
+  async (userId, { rejectWithValue, signal }) => {
     try {
       const params = userId ? { user_id: userId } : {};
-      const response = await api.getFiles(params);
+      const response = await api.get('/storage/files/', { params, signal });
       return response.data;
-
     } catch (err) {
-      return rejectWithValue(
-        err.response.data
-      );
+      return rejectWithValue(err.response.data);
     }
   }
 );
+
 
 /**
  * Deletes a file from the server.
@@ -38,19 +35,16 @@ export const fetchFiles = createAsyncThunk(
  */
 export const deleteFile = createAsyncThunk(
   'files/deleteFile',
-
-  async (id, { rejectWithValue }) => {
+  async (id, { rejectWithValue, signal }) => {
     try {
-      await api.deleteFile(id);
+      await api.delete(`/storage/files/${id}/`, { signal });
       return id;
-
     } catch (err) {
-      return rejectWithValue(
-        err.response.data
-      );
+      return rejectWithValue(err.response.data);
     }
   }
 );
+
 
 /**
  * Downloads a file from the server.
@@ -63,17 +57,16 @@ export const deleteFile = createAsyncThunk(
  */
 export const downloadFile = createAsyncThunk(
   'files/downloadFile',
-
-  async (id, { rejectWithValue }) => {
+  async (id, { rejectWithValue, signal }) => {
     try {
-      const response = await api.downloadFile(id);
+      const response = await api.get(`/storage/files/${id}/download/`, {
+        responseType: 'blob',
+        headers: { 'Accept': 'application/octet-stream' },
+        signal
+      });
       return response.data;
-
     } catch (err) {
-      return rejectWithValue(
-        err.response?.data ||
-        'Ошибка скачивания файла'
-      );
+      return rejectWithValue(err.response?.data || 'Ошибка скачивания файла');
     }
   }
 );
@@ -89,18 +82,15 @@ export const downloadFile = createAsyncThunk(
  */
 export const uploadFile = createAsyncThunk(
   'files/uploadFile',
-
-  async (formData, { rejectWithValue }) => {
+  async (formData, { rejectWithValue, signal }) => {
     try {
-      const response = await api.uploadFile(formData);
+      const response = await api.post('/storage/files/', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+        signal
+      });
       return response.data;
-
     } catch (err) {
-      return rejectWithValue(
-        err.response?.data?.error ||
-        err.message ||
-        'Ошибка загрузки файла'
-      );
+      return rejectWithValue(err.response?.data?.error || err.message || 'Ошибка загрузки файла');
     }
   }
 );
@@ -116,16 +106,12 @@ export const uploadFile = createAsyncThunk(
  */
 export const updateFile = createAsyncThunk(
   'files/updateFile',
-
-  async ({ id, data }, { rejectWithValue }) => {
+  async ({ id, data }, { rejectWithValue, signal }) => {
     try {
-      const response = await api.updateFile(id, data);
+      const response = await api.patch(`/storage/files/${id}/`, data, { signal });
       return response.data;
-
     } catch (err) {
-      return rejectWithValue(
-        err.response.data
-      );
+      return rejectWithValue(err.response.data);
     }
   }
 );

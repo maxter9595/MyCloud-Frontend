@@ -4,7 +4,8 @@ import {
   FaDownload,
   FaEdit,
   FaTrash,
-  FaLink
+  FaLink,
+  FaSpinner
 } from 'react-icons/fa';
 
 import {
@@ -13,102 +14,59 @@ import {
   updateFile
 } from '../../store/slices/filesSlice';
 
-
-/**
- * Component representing a file item with actions.
- *
- * This component displays the file's name, size, and
- * comment. It provides actions to download the file,
- * copy the download link, edit the comment, update
- * the comment, and delete the file. State management
- * for editing and updating comments is handled locally
- * using useState, while file operations are dispatched
- * through Redux actions.
- *
- * @param {Object} props - The properties for the component.
- * @param {Object} props.file - The file object containing
- * details like id, original name, size, comment, and shared link.
- */
 const FileItem = ({ file }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [comment, setComment] = useState(file.comment);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
   const dispatch = useDispatch();
 
   const handleDownload = async () => {
+    setIsDownloading(true);
     try {
-      const response = await dispatch(
-        downloadFile(file.id)
-      ).unwrap();
-
-      const url = window.URL.createObjectURL(
-        new Blob([response])
-      );
-
+      const response = await dispatch(downloadFile(file.id)).unwrap();
+      const url = window.URL.createObjectURL(new Blob([response]));
       const link = document.createElement('a');
-
       link.href = url;
-      link.setAttribute(
-        'download',
-        file.original_name
-      );
-
+      link.setAttribute('download', file.original_name);
       document.body.appendChild(link);
       link.click();
-
       link.parentNode.removeChild(link);
       window.URL.revokeObjectURL(url);
-      
     } catch (error) {
       console.error('Ошибка скачивания файла:', error);
+    } finally {
+      setIsDownloading(false);
     }
   };
 
-/**
- * Handles the deletion of a file. 
- * Prompts the user  with a confirmation 
- * dialog before proceeding with the deletion. 
- * Dispatches an action to delete the file 
- * from the server via Redux.
- * 
- * @returns {void}
- */
   const handleDelete = async () => {
-    if (window.confirm(
-      'Вы уверены, что хотите удалить этот файл?')
-    ) {
-
+    if (window.confirm('Вы уверены, что хотите удалить этот файл?')) {
+      setIsDeleting(true);
       try {
-        await dispatch(
-          deleteFile(file.id)
-        ).unwrap();
-      
+        await dispatch(deleteFile(file.id)).unwrap();
       } catch (error) {
-        console.error(
-          'Ошибка удаления файла:', 
-          error
-        );
+        console.error('Ошибка удаления файла:', error);
+      } finally {
+        setIsDeleting(false);
       }
     }
   };
 
-  /**
-   * Handles the update of a file's comment. 
-   * Dispatches an action to update the file's
-   * comment on the server via Redux. Sets
-   * the isEditing state to false after the
-   * update is successfully completed.
-   * 
-   * @returns {void}
-   */
-  const handleUpdate = () => {
-    dispatch(
-      updateFile({ 
+  const handleUpdate = async () => {
+    setIsUpdating(true);
+    try {
+      await dispatch(updateFile({ 
         id: file.id, 
         data: { comment } 
-      })
-    ).then(
-      () => setIsEditing(false)
-    );
+      })).unwrap();
+      setIsEditing(false);
+    } catch (error) {
+      console.error('Ошибка обновления файла:', error);
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
   /**
@@ -163,14 +121,15 @@ const FileItem = ({ file }) => {
 
   return (
     <div className="file-item">
-
       <div className="file-info">
         <span>{file.original_name}</span>
-        <span>{file.size} bytes</span>
+        <span>{(file.size / (1024 * 1024)).toFixed(2)} MB</span>
         {isEditing ? (
-          <input value={comment} onChange={
-            (e) => setComment(e.target.value)
-          } />
+          <input 
+            value={comment} 
+            onChange={(e) => setComment(e.target.value)}
+            disabled={isUpdating}
+          />
         ) : (
           <span>{file.comment}</span>
         )}
@@ -180,8 +139,9 @@ const FileItem = ({ file }) => {
         <button 
           onClick={handleDownload} 
           title="Скачать"
+          disabled={isDownloading}
         >
-          <FaDownload />
+          {isDownloading ? <FaSpinner className="spin" /> : <FaDownload />}
         </button>
 
         <button 
@@ -194,24 +154,26 @@ const FileItem = ({ file }) => {
         <button 
           onClick={() => setIsEditing(!isEditing)} 
           title={isEditing ? 'Отмена' : 'Редактировать'}
+          disabled={isUpdating}
         >
           <FaEdit />
         </button>
 
         {isEditing && (
           <button 
-            onClick={handleUpdate} 
-            title="Сохранить"
+            onClick={handleUpdate}
+            disabled={isUpdating}
           >
-            Сохранить
+            {isUpdating ? <FaSpinner className="spin" /> : 'Сохранить'}
           </button>
         )}
 
         <button 
           onClick={handleDelete} 
           title="Удалить"
+          disabled={isDeleting}
         >
-          <FaTrash />
+          {isDeleting ? <FaSpinner className="spin" /> : <FaTrash />}
         </button>
       </div>
     </div>

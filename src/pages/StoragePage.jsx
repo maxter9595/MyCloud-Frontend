@@ -1,50 +1,19 @@
 import { useDropzone } from 'react-dropzone';
 import { useSelector, useDispatch } from 'react-redux';
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { FaSpinner, FaUpload, FaTimes } from 'react-icons/fa';
 
 import FileList from '../components/files/FileList';
 import StorageInfo from '../components/files/StorageInfo';
 import { fetchFiles, uploadFile } from '../store/slices/filesSlice';
 
-
-/**
- * Component representing the storage page.
- *
- * This component displays the user's storage
- * usage with a progress bar, a list of the user's
- * files and a form to upload a new file. It fetches
- * the user's files list every time the component
- * mounts and displays a warning message if the
- * usage is higher than 90%.
- *
- * @returns {ReactElement} The StoragePage component
- */
 const StoragePage = () => {
   const dispatch = useDispatch();
   const abortControllerRef = useRef(null);
-
-  const {
-    files,
-    loading,
-    error
-  } = useSelector(
-    (state) => state.files
-  );
-
-  const [
-    comment,
-    setComment
-  ] = useState('');
-
-  const [
-    fileToUpload,
-    setFileToUpload
-  ] = useState(null);
-
-  const [
-    isDragging,
-    setIsDragging
-  ] = useState(false);
+  const { files, loading, error, uploading } = useSelector((state) => state.files);
+  const [filesToUpload, setFilesToUpload] = useState([]);
+  const [isDragging, setIsDragging] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState({});
 
   useEffect(() => {
     dispatch(fetchFiles());
@@ -53,99 +22,89 @@ const StoragePage = () => {
   useEffect(() => {
     abortControllerRef.current = new AbortController();
     const signal = abortControllerRef.current.signal;
-    
     dispatch(fetchFiles({ signal }));
-
-    return () => {
-      abortControllerRef.current.abort();
-    };
+    return () => abortControllerRef.current.abort();
   }, [dispatch]);
 
   const onDrop = useCallback((acceptedFiles) => {
     setIsDragging(false);
     if (acceptedFiles.length === 0) return;
-    setFileToUpload(acceptedFiles[0]);
+    setFilesToUpload(prev => [
+      ...prev, 
+      ...acceptedFiles.map(file => ({
+        file, 
+        comment: '', 
+        id: Math.random().toString(36).substring(2, 9)
+      }))
+    ]);
   }, []);
 
-  /**
-   * Handles the submission
-   * of the file upload form.
-   *
-   * Checks if a file is selected
-   * and if so, creates a FormData
-   * object, appends the file and comment
-   * to it, and dispatches an action to
-   * upload the file to the server. If
-   * the upload is successful, fetches
-   * the files list again and resets the form.
-   *
-   * @returns {void}
-   */
-  const handleUpload = () => {
-    if (!fileToUpload) return;
-    const formData = new FormData();
+  const handleUpload = async () => {
+    if (filesToUpload.length === 0) return;
+    
+    const uploadPromises = filesToUpload.map(fileObj => {
+      const formData = new FormData();
+      formData.append('file', fileObj.file);
+      formData.append('comment', fileObj.comment);
+      
+      return dispatch(uploadFile({
+        formData,
+        onUploadProgress: (progressEvent) => {
+          setUploadProgress(prev => ({
+            ...prev,
+            [fileObj.id]: Math.round((progressEvent.loaded * 100) / progressEvent.total)
+          }));
+        }
+      })).unwrap();
+    });
 
-    formData.append(
-      'file',
-      fileToUpload
-    );
-
-    formData.append(
-      'comment',
-      comment
-    );
-
-    dispatch(uploadFile(formData))
-      .unwrap()
-
-      .then(() => {
-        dispatch(fetchFiles());
-        setFileToUpload(null);
-        setComment('');
-      })
-
-      .catch((error) => {
-        console.error(
-          'Ошибка загрузки файла:',
-          error
-        );
-
-        alert(
-          'Ошибка загрузки файла: ' + (
-            error.message || 'Обратитесь к администратору'
-          )
-        );
-      });
-  };
-
-  /**
-   * Handles a change event
-   * on the file input element.
-   *
-   * Checks if the event target has a files
-   * property and if the length of the files
-   * array is greater than 0, sets the fileToUpload
-   * state to the first element of the files array.
-   *
-   * @param {Event} e - The event object.
-   * @returns {void}
-   */
-  const handleFileInputChange = (e) => {
-    if (e.target.files.length) {
-      setFileToUpload(
-        e.target.files[0]
-      );
+    try {
+      await Promise.all(uploadPromises);
+      dispatch(fetchFiles());
+      setFilesToUpload([]);
+      setUploadProgress({});
+    } catch (error) {
+      console.error('Ошибка загрузки файлов:', error);
+      alert('Ошибка загрузки файлов: ' + (error.message || 'Обратитесь к администратору'));
     }
   };
 
-  const {
-    getRootProps,
-    getInputProps
-  } = useDropzone({
+  const handleFileInputChange = (e) => {
+    if (e.target.files.length) {
+      setFilesToUpload(prev => [
+        ...prev, 
+        ...Array.from(e.target.files).map(file => ({
+          file, 
+          comment: '', 
+          id: Math.random().toString(36).substring(2, 9)
+        }))
+      ]);
+    }
+  };
+
+  const updateFileComment = (id, newComment) => {
+    setFilesToUpload(prev => 
+      prev.map(file => 
+        file.id === id ? { ...file, comment: newComment } : file
+      )
+    );
+  };
+
+  const removeFileFromQueue = (id) => {
+    setFilesToUpload(prev => prev.filter(file => file.id !== id));
+    setUploadProgress(prev => {
+      const newProgress = {...prev};
+      delete newProgress[id];
+      return newProgress;
+    });
+  };
+
+  const { getRootProps, getInputProps } = useDropzone({
     onDrop,
     onDragEnter: () => setIsDragging(true),
     onDragLeave: () => setIsDragging(false),
-    noClick: true
+    noClick: true,
+    multiple: true
   });
 
   return (
@@ -155,7 +114,7 @@ const StoragePage = () => {
       {isDragging && (
         <div className="dropzone-overlay">
           <div className="dropzone-content">
-            Отпустите файл для загрузки
+            Отпустите файлы для загрузки
           </div>
         </div>
       )}
@@ -165,65 +124,90 @@ const StoragePage = () => {
         <StorageInfo />
 
         <div className="upload-section">
+          {filesToUpload.length > 0 ? (
+            <div className="files-to-upload">
+              <h3>Файлы готовы к загрузке:</h3>
+              
+              {filesToUpload.map((fileObj) => (
+                <div key={fileObj.id} className="file-to-upload">
+                  <div className="file-info">
+                    <p><strong>Имя:</strong> {fileObj.file.name}</p>
+                    <p><strong>Размер:</strong> {(fileObj.file.size / (1024 * 1024)).toFixed(2)} MB</p>
+                    
+                    <div className="form-group">
+                      <label htmlFor={`comment-${fileObj.id}`}>Комментарий</label>
+                      <input
+                        type="text"
+                        id={`comment-${fileObj.id}`}
+                        value={fileObj.comment}
+                        onChange={(e) => updateFileComment(fileObj.id, e.target.value)}
+                        placeholder="Добавьте комментарий"
+                      />
+                    </div>
 
-          {fileToUpload ? (
-            <div className="file-preview">
-              <h3>Файл готов к загрузке:</h3>
-              <p><strong>Имя:</strong> {fileToUpload.name}</p>
-              <p><strong>Размер:</strong> {(
-                  fileToUpload.size / 1024 / 1024
-                ).toFixed(2)} MB
-              </p>
+                    {uploadProgress[fileObj.id] && (
+                      <div className="upload-progress">
+                        <div 
+                          className="progress-bar"
+                          style={{ width: `${uploadProgress[fileObj.id]}%` }}
+                        ></div>
+                        <span>{uploadProgress[fileObj.id]}%</span>
+                      </div>
+                    )}
+                  </div>
 
-              <div className="form-group">
-                <label htmlFor="comment">Комментарий</label>
-                <input
-                  type="text"
-                  id="comment"
-                  value={comment}
-                  onChange={(e) => setComment(e.target.value)}
-                  placeholder="Добавьте комментарий к файлу"
-                />
-              </div>
+                  <button
+                    onClick={() => removeFileFromQueue(fileObj.id)}
+                    className="remove-file-btn"
+                  >
+                    <FaTimes />
+                  </button>
+                </div>
+              ))}
 
               <div className="upload-actions">
                 <button
                   onClick={handleUpload}
                   className="submit-btn"
+                  disabled={uploading}
                 >
-                  Загрузить файл
+                  {uploading ? (
+                    <>
+                      <FaSpinner className="spin" /> Загрузка...
+                    </>
+                  ) : (
+                    <>
+                      <FaUpload /> Загрузить все файлы
+                    </>
+                  )}
                 </button>
                 <button
                   onClick={() => {
-                    setFileToUpload(null);
-                    setComment('');
+                    setFilesToUpload([]);
+                    setUploadProgress({});
                   }}
                   className="cancel-btn"
+                  disabled={uploading}
                 >
                   Отмена
                 </button>
               </div>
             </div>
-
           ) : (
             <>
               <div className="file-upload-area">
-                <label
-                  htmlFor="file-input"
-                  className="file-upload-btn"
-                >
-                  Выберите файл
+                <label htmlFor="file-input" className="file-upload-btn">
+                  Выберите файлы
                 </label>
-
                 <input
                   id="file-input"
                   type="file"
                   onChange={handleFileInputChange}
+                  multiple
                   hidden
                 />
-
                 <p className="drag-hint">
-                  или перетащите файл в эту область
+                  или перетащите файлы в эту область
                 </p>
               </div>
             </>
@@ -236,11 +220,13 @@ const StoragePage = () => {
           </div>
         )}
 
-        {
-          loading ?
-          <p>Загрузка...</p> :
+        {loading ? (
+          <div className="loading-files">
+            <FaSpinner className="spin" /> Загрузка списка файлов...
+          </div>
+        ) : (
           <FileList files={files} />
-        }
+        )}
       </div>
     </div>
   );

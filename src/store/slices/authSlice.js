@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-
 import api from '../../api/auth';
+import { secureStoreToken, removeSecureToken } from '../../utils/security';
 
 
 /**
@@ -17,7 +17,7 @@ export const register = createAsyncThunk(
   async (userData, { rejectWithValue, signal }) => {
     try {
       const response = await api.post('/auth/register/', userData, { signal });
-      localStorage.setItem('token', response.data.token);
+      secureStoreToken(response.data.token);
       return response.data;
     } catch (err) {
       return rejectWithValue(err.response?.data || 'Ошибка регистрации');
@@ -61,7 +61,7 @@ export const login = createAsyncThunk(
   async (credentials, { rejectWithValue, signal }) => {
     try {
       const response = await api.post('/auth/login/', credentials, { signal });
-      localStorage.setItem('token', response.data.token);
+      secureStoreToken(response.data.token);
       return response.data;
     } catch (err) {
       const errorMessage = "Invalid credentials or your account has been deactivated. Please contact the administrator at admin@mail.ru";
@@ -97,7 +97,7 @@ const authSlice = createSlice({
      * @param {Object} state - Redux state object.
      */
     logout: (state) => {
-      localStorage.removeItem('token');
+      removeSecureToken();
       state.user = null;
       state.isAuthenticated = false;
     },

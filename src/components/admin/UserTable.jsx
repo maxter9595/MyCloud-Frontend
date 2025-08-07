@@ -24,7 +24,8 @@ const UserTable = ({ users, isMobile }) => {
   const [newStorageLimit, setNewStorageLimit] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [storageLimitError, setStorageLimitError] = useState("");
-
+  const [setIsDeleting] = useState(false);
+  
   const totalPages = Math.ceil(users.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
@@ -52,13 +53,21 @@ const UserTable = ({ users, isMobile }) => {
 
   const handleDelete = async (userId, e) => {
     e.stopPropagation();
-    let text = "Вы уверены, что хотите удалить этого пользователя?";
-    if (window.confirm(text)) {
-      try {
-        await dispatch(deleteUser(userId)).unwrap();
-      } catch (error) {
-        console.error("User deletion error:", error);
-      }
+    
+    const confirmText = `Вы уверены, что хотите удалить этого пользователя?\n\nДля подтверждения введите "DELETE"`;
+    const userInput = prompt(confirmText);
+    
+    if (userInput?.trim()?.toUpperCase() !== 'DELETE') {
+      return;
+    }
+
+    setIsDeleting(true);
+    try {
+      await dispatch(deleteUser(userId)).unwrap();
+    } catch (error) {
+      console.error('User deletion error:', error);
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -103,8 +112,16 @@ const UserTable = ({ users, isMobile }) => {
 
   const handleStorageLimitChange = async (userId, e) => {
     e.stopPropagation();
+    
     if (!validateStorageLimit(newStorageLimit)) return;
     
+    const confirmText = `Вы изменяете лимит хранилища для пользователя.\nНовый лимит: ${newStorageLimit} GB\n\nДля подтверждения введите "CONFIRM"`;
+    const userInput = prompt(confirmText);
+    
+    if (userInput?.trim()?.toUpperCase() !== 'CONFIRM') {
+      return;
+    }
+
     const limitGB = parseFloat(newStorageLimit);
     const limitBytes = Math.round(limitGB * 1024 * 1024 * 1024);
 
@@ -119,7 +136,7 @@ const UserTable = ({ users, isMobile }) => {
       setEditingUserId(null);
       setEditingField(null);
     } catch (error) {
-      console.error("Ошибка изменения лимита хранилища:", error);
+      console.error('Ошибка изменения лимита хранилища:', error);
     }
   };
 

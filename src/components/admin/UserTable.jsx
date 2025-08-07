@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import {
   FaToggleOn,
@@ -8,43 +8,36 @@ import {
   FaSave,
   FaTimes,
   FaDatabase,
+  FaChevronLeft,
+  FaChevronRight,
 } from "react-icons/fa";
 
 import { deleteUser, updateUser } from "../../store/slices/usersSlice";
 
-/**
- * Renders a table of users with functionalities
- * to update password, storage limit, and toggle
- * active status. Allows deleting users and editing
- * user details.
- * 
- * @param {Array} users - List of user
- * objects to display in the table.
- * @param {boolean} isMobile - Flag to
- * indicate if the view is in mobile mode.
- */
+const ITEMS_PER_PAGE = 10;
+
 const UserTable = ({ users, isMobile }) => {
   const dispatch = useDispatch();
   const [password, setPassword] = useState("");
   const [editingUserId, setEditingUserId] = useState(null);
   const [editingField, setEditingField] = useState(null);
   const [newStorageLimit, setNewStorageLimit] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [storageLimitError, setStorageLimitError] = useState("");
 
-  /**
-   * Handles toggling a user's active status. Prevents 
-   * event propagation to the parent element and 
-   * dispatches an action to update the user's data.
-   * 
-   * @param {number} userId - ID 
-   * of the user to update.
-   * @param {boolean} isActive - The 
-   * user's current active status.
-   * @param {Event} e - The event object 
-   * passed from the user's click event.
-   */
+  const totalPages = Math.ceil(users.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const paginatedUsers = users.slice(startIndex, endIndex);
+
+  useEffect(() => {
+    if (currentPage > totalPages && totalPages > 0) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
+
   const handleToggleActive = async (userId, isActive, e) => {
     e.stopPropagation();
-
     try {
       await dispatch(
         updateUser({
@@ -52,57 +45,29 @@ const UserTable = ({ users, isMobile }) => {
           data: { is_active: !isActive },
         })
       ).unwrap();
-    
     } catch (error) {
       console.error("Status change error:", error);
     }
   };
 
-  /**
-   * Handles deleting a user. Prevents event 
-   * propagation to the parent element, asks 
-   * the user for confirmation, and dispatches 
-   * an action to delete the user.
-   * 
-   * @param {number} userId - ID 
-   * of the user to delete.
-   * @param {Event} e - The event object 
-   * passed from the user's click event.
-   */
   const handleDelete = async (userId, e) => {
     e.stopPropagation();
     let text = "Вы уверены, что хотите удалить этого пользователя?";
-
     if (window.confirm(text)) {
       try {
         await dispatch(deleteUser(userId)).unwrap();
-        
       } catch (error) {
         console.error("User deletion error:", error);
       }
     }
   };
 
-  /**
-   * Handles changing a user's password. 
-   * Prevents event propagation to the 
-   * parent element, checks if a new password 
-   * has been entered, and dispatches an action
-   * to update the user's password.
-   * 
-   * @param {number} userId - ID 
-   * of the user whose password to change.
-   * @param {Event} e - The event object 
-   * passed from the user's click event.
-   */
   const handlePasswordChange = async (userId, e) => {
     e.stopPropagation();
-
     if (!password) {
       alert("Введите новый пароль");
       return;
     }
-
     try {
       await dispatch(
         updateUser({
@@ -110,40 +75,38 @@ const UserTable = ({ users, isMobile }) => {
           data: { password },
         })
       ).unwrap();
-
       setEditingUserId(null);
       setEditingField(null);
       setPassword("");
-
     } catch (error) {
       console.error("Ошибка изменения пароля:", error);
     }
   };
 
-  /**
-   * Handles changing a user's storage limit. 
-   * Prevents event propagation to the 
-   * parent element, checks if a valid limit 
-   * has been entered, and dispatches an action
-   * to update the user's storage limit.
-   * 
-   * @param {number} userId - ID of the 
-   * user whose storage limit to change.
-   * @param {Event} e - The event object 
-   * passed from the user's click event.
-   */
+  const validateStorageLimit = (value) => {
+    const limitGB = parseFloat(value);
+    if (isNaN(limitGB)) {
+      setStorageLimitError("Введите корректное число");
+      return false;
+    }
+    if (limitGB < 0.1) {
+      setStorageLimitError("Минимальный лимит - 0.1 GB");
+      return false;
+    }
+    if (limitGB > 1000) {
+      setStorageLimitError("Максимальный лимит - 1000 GB");
+      return false;
+    }
+    setStorageLimitError("");
+    return true;
+  };
+
   const handleStorageLimitChange = async (userId, e) => {
     e.stopPropagation();
-    const limitGB = parseFloat(newStorageLimit);
+    if (!validateStorageLimit(newStorageLimit)) return;
     
-    if (isNaN(limitGB)) {
-      alert("Введите корректное число");
-      return;
-    }
-
-    const limitBytes = Math.round(
-      limitGB * 1024 * 1024 * 1024
-    );
+    const limitGB = parseFloat(newStorageLimit);
+    const limitBytes = Math.round(limitGB * 1024 * 1024 * 1024);
 
     try {
       await dispatch(
@@ -152,60 +115,33 @@ const UserTable = ({ users, isMobile }) => {
           data: { max_storage: limitBytes },
         })
       ).unwrap();
-
       setNewStorageLimit("");
       setEditingUserId(null);
       setEditingField(null);
-    
     } catch (error) {
-      console.error(
-        "Ошибка изменения лимита хранилища:", 
-        error
-      );
+      console.error("Ошибка изменения лимита хранилища:", error);
     }
   };
 
-  /**
-   * Starts editing a user's field. If 
-   * the field is "storage", the value is
-   * converted from bytes to gigabytes 
-   * and rounded to 2 decimal places.
-   * 
-   * @param {number} userId - ID 
-   * of the user to edit.
-   * @param {string} field - Field to edit.
-   * @param {number} [currentValue] - Current 
-   * value of the field.
-   */
   const startEditing = (userId, field, currentValue = "") => {
     setEditingUserId(userId);
     setEditingField(field);
-    
     if (field === "storage") {
-      setNewStorageLimit(
-        (currentValue / (1024 * 1024 * 1024)
-      ).toFixed(2));
+      setNewStorageLimit((currentValue / (1024 * 1024 * 1024)).toFixed(2));
     }
   };
 
-/**
- * Cancels the current editing 
- * session by resetting the editing 
- * user ID, editing field, password, 
- * and new storage limit to their 
- * initial states.
- */
   const cancelEditing = () => {
     setEditingUserId(null);
     setEditingField(null);
     setPassword("");
     setNewStorageLimit("");
+    setStorageLimitError("");
   };
 
   return (
     <div className="users-section">
       <table className="user-table">
-
         <thead>
           <tr>
             {!isMobile && <th>ID</th>}
@@ -219,9 +155,8 @@ const UserTable = ({ users, isMobile }) => {
         </thead>
 
         <tbody>
-          {users.map((user) => (
+          {paginatedUsers.map((user) => (
             <tr key={user.id}>
-            
               {!isMobile && <td>{user.id}</td>}
               <td>{user.username}</td>
               {!isMobile && <td>{user.email}</td>}
@@ -230,13 +165,9 @@ const UserTable = ({ users, isMobile }) => {
 
               <td>
                 <button
-                  onClick={(e) =>
-                    handleToggleActive(user.id, user.is_active, e)
-                  }
+                  onClick={(e) => handleToggleActive(user.id, user.is_active, e)}
                   className="status-btn"
-                  aria-label={
-                    user.is_active ? "Деактивировать" : "Активировать"
-                  }
+                  aria-label={user.is_active ? "Деактивировать" : "Активировать"}
                 >
                   {user.is_active ? (
                     <FaToggleOn color="#52c41a" size={20} />
@@ -248,7 +179,6 @@ const UserTable = ({ users, isMobile }) => {
               
               <td className="actions-cell">
                 <div className="action-buttons">
-
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -288,7 +218,6 @@ const UserTable = ({ users, isMobile }) => {
                     className="password-form"
                     onClick={(e) => e.stopPropagation()}
                   >
-
                     <input
                       type="password"
                       value={password}
@@ -314,7 +243,6 @@ const UserTable = ({ users, isMobile }) => {
                     className="storage-form"
                     onClick={(e) => e.stopPropagation()}
                   >
-
                     <input
                       type="number"
                       value={newStorageLimit}
@@ -322,17 +250,24 @@ const UserTable = ({ users, isMobile }) => {
                         const value = e.target.value;
                         if (value === "" || !isNaN(value)) {
                           setNewStorageLimit(value);
+                          validateStorageLimit(value);
                         }
                       }}
                       placeholder="Новый лимит (GB)"
                       step="0.1"
                       min="0.1"
+                      max="1000"
                       autoFocus
                     />
+                    
+                    {storageLimitError && (
+                      <div className="error-message">{storageLimitError}</div>
+                    )}
 
                     <div className="form-actions">
                       <button
                         onClick={(e) => handleStorageLimitChange(user.id, e)}
+                        disabled={!!storageLimitError}
                       >
                         <FaSave /> {!isMobile && "Сохранить"}
                       </button>
@@ -348,6 +283,30 @@ const UserTable = ({ users, isMobile }) => {
           ))}
         </tbody>
       </table>
+
+      {totalPages > 1 && (
+        <div className="pagination">
+          <button
+            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+            disabled={currentPage === 1}
+            className="pagination-btn"
+          >
+            <FaChevronLeft />
+          </button>
+          
+          <span className="page-info">
+            Страница {currentPage} из {totalPages}
+          </span>
+          
+          <button
+            onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+            disabled={currentPage === totalPages}
+            className="pagination-btn"
+          >
+            <FaChevronRight />
+          </button>
+        </div>
+      )}
     </div>
   );
 };

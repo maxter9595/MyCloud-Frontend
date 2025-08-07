@@ -1092,13 +1092,131 @@ main {
   color: var(--error-color);
 }
 
-/* ============================================= */
-/* Animation Styles */
-/* ============================================= */
 
+/* ============================================= */
+/* Error Validation and animations */
+/* ============================================= */
+/* Анимации */
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ? */
+.form-group {
+  position: relative;
+  margin-bottom: 1.5rem;
+}
+
+.form-group .input-wrapper {
+  position: relative;
+}
+
+/* ? */
+.form-input {
+  width: 100%;
+  padding: 0.75rem 2.5rem 0.75rem 0.75rem;
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+/* ? */
+.form-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(24, 144, 255, 0.2);
+}
+
+.form-group.idle .form-input {
+  border-color: var(--border-color);
+}
+
+.form-group.valid .form-input {
+  border-color: var(--success-color);
+  background-color: rgba(82, 196, 26, 0.05);
+}
+
+.form-group.error .form-input {
+  border-color: var(--error-color);
+  background-color: rgba(255, 77, 79, 0.05);
+}
+
+.form-group.checking .form-input {
+  border-color: var(--warning-color);
+  background-color: rgba(250, 173, 20, 0.05);
+}
+
+.status-icon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.2rem;
+  transition: opacity 0.3s ease;
+}
+
+.status-icon.error {
+  color: var(--error-color);
+}
+
+.status-icon.valid {
+  color: var(--success-color);
+}
+
+.status-icon.checking {
+  color: var(--warning-color);
+}
+
+.status-icon.checking.spin {
+  animation: spin 1s linear infinite;
+}
+
+/* ? */
+.error-message {
+  color: var(--error-color);
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  background: rgba(255, 77, 79, 0.1);
+  border-radius: 4px;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.hint-tooltip {
+  margin-left: 0.5rem;
+  color: var(--text-secondary);
+  cursor: help;
+  position: relative;
+  display: inline-block;
+}
+
+.hint-tooltip:hover::after {
+  content: attr(title);
+  position: absolute;
+  left: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  margin-left: 8px;
+  padding: 6px 12px;
+  background: var(--text-color);
+  color: white;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  white-space: nowrap;
+  z-index: 100;
+}
+
+[role='alert'] {
+  color: var(--error-color);
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
 }
 
 /* ============================================= */

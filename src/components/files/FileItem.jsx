@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, memo } from 'react';
 import { useDispatch } from 'react-redux';
 import {
   FaDownload,
@@ -14,7 +14,7 @@ import {
   updateFile
 } from '../../store/slices/filesSlice';
 
-const FileItem = ({ file }) => {
+const FileItem = memo(({ file }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [comment, setComment] = useState(file.comment);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -69,33 +69,16 @@ const FileItem = ({ file }) => {
     }
   };
 
-  /**
-   * Copies the download link to 
-   * the clipboard. Shows an alert 
-   * notification if copying was 
-   * successful. If an error occurs 
-   * while copying, logs the error 
-   * to the console.
-   * @returns {void}
-   */
   const copyDownloadLink = async () => {
     const apiBase = process.env.REACT_APP_API_BASE_URL;
-    
     const downloadLink = `${apiBase}/storage/shared/${file.shared_link}`;
     const downloadLinkWithSlash = `${downloadLink}/`;
-
-    console.log('Формируем ссылки:', { 
-      original: downloadLink,
-      withSlash: downloadLinkWithSlash 
-    });
 
     try {
       await navigator.clipboard.writeText(downloadLinkWithSlash);
       alert('Ссылка скопирована!');
-      
     } catch (err) {
       console.error('Ошибка копирования (Clipboard API):', err);
-      
       try {
         const textarea = document.createElement('textarea');
         textarea.value = downloadLinkWithSlash;
@@ -111,7 +94,6 @@ const FileItem = ({ file }) => {
         } else {
           alert(`Ссылка для скачивания файла: ${downloadLink}`);
         }
-        
       } catch (fallbackError) {
         console.error('Ошибка fallback-копирования:', fallbackError);
         alert(`Не удалось скопировать автоматически. Ссылка: ${downloadLink}`);
@@ -178,6 +160,6 @@ const FileItem = ({ file }) => {
       </div>
     </div>
   );
-};
+});
 
 export default FileItem;

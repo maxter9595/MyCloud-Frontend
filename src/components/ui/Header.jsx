@@ -1,23 +1,15 @@
+// frontend\src\components\ui\Header.jsx
+import { memo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 
 import { logout } from '../../store/slices/authSlice';
+import { selectIsAuthenticated, selectCurrentUser } from '../../store/selectors';
 import { ReactComponent as Logo } from '../../assets/logo.svg';
 
-
-/**
- * Header component that displays navigation 
- * links and a logout button when the user 
- * is authenticated.
- *
- * @returns {React.ReactElement} The 
- * header component.
- */
-const Header = () => {
-  const { isAuthenticated, user } = useSelector(
-    (state) => state.auth
-  );
-
+const Header = memo(() => {
+  const isAuthenticated = useSelector(selectIsAuthenticated);
+  const user = useSelector(selectCurrentUser);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -33,20 +25,12 @@ const Header = () => {
   };
 
   const currentPath = window.location.pathname;
-  const showAdditionalLinks = ![
-    '/', 
-    '/login', 
-    '/register'
-  ].includes(currentPath);
+  const showAdditionalLinks = !['/', '/login', '/register'].includes(currentPath);
 
   return (
     <header>
       <nav>
-        <Link
-          to="/"
-          className="logo"
-          onClick={handleLogoClick}
-        >
+        <Link to="/" className="logo" onClick={handleLogoClick}>
           <Logo />
         </Link>
 
@@ -83,6 +67,6 @@ const Header = () => {
       </nav>
     </header>
   );
-};
+});
 
 export default Header;

@@ -1,37 +1,29 @@
-import { useEffect, useRef } from 'react';
+// frontend\src\App.js
+import { useEffect, useRef, Suspense } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Routes, Route, useNavigate } from 'react-router-dom';
 
 import api from './api';
-import HomePage from './pages/HomePage';
-import LoginPage from './pages/LoginPage';
-import AdminPage from './pages/AdminPage';
+import { selectIsAuthenticated } from './store/selectors';
 import Header from './components/ui/Header';
-import StoragePage from './pages/StoragePage';
-import RegisterPage from './pages/RegisterPage';
 import ProtectedRoute from './components/ProtectedRoute';
-
+import { setUser, fetchCurrentUser } from './store/slices/authSlice';
 import { 
-  setUser, 
-  fetchCurrentUser  
-} from './store/slices/authSlice';
+  HomePage,
+  LoginPage,
+  AdminPage,
+  StoragePage,
+  RegisterPage 
+} from './pages';
 
+import './App.css';
 
-/**
- * The main app component, which renders 
- * the app's header, routes, and handles
- * authentication-related redirects.
- *
- * @returns {React.ReactElement} The app component.
- */
 function App() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const abortControllerRef = useRef(null);
 
-  const { isAuthenticated } = useSelector(
-    (state) => state.auth
-  );
+  const isAuthenticated = useSelector(selectIsAuthenticated);
 
   useEffect(() => {
     abortControllerRef.current = new AbortController();
@@ -62,50 +54,25 @@ function App() {
         abortControllerRef.current.abort();
       }
     };
-  }, [
-    dispatch, 
-    isAuthenticated, 
-    navigate
-  ]);
+  }, [dispatch, isAuthenticated, navigate]);
 
   return (
-    <>
+    <Suspense fallback={<div className="loading-spinner">Загрузка...</div>}>
       <Header />
       <Routes>
-        <Route 
-          path="/" 
-          element={<HomePage />} 
-        />
+        <Route path="/" element={<HomePage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
 
-        <Route 
-          path="/login" 
-          element={<LoginPage />} 
-        />
-
-        <Route 
-          path="/register" 
-          element={<RegisterPage />} 
-        />
-
-        <Route 
-          element={<ProtectedRoute 
-        />}>
-          <Route 
-            path="/storage" 
-            element={<StoragePage />} 
-          />
+        <Route element={<ProtectedRoute />}>
+          <Route path="/storage" element={<StoragePage />} />
         </Route>
 
-        <Route 
-          element={<ProtectedRoute adminOnly />}
-        >
-          <Route 
-            path="/admin" 
-            element={<AdminPage />} 
-          />
+        <Route element={<ProtectedRoute adminOnly />}>
+          <Route path="/admin" element={<AdminPage />} />
         </Route>
       </Routes>
-    </>
+    </Suspense>
   );
 }
 

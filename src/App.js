@@ -3,18 +3,25 @@ import { useEffect, useRef, Suspense } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Routes, Route, useNavigate } from 'react-router-dom';
 
+// import Header from './components/core/ui/Header';
+// import ProtectedRoute from './components/core/routes/ProtectedRoute';
+
 import api from './api';
 import { selectIsAuthenticated } from './store/selectors';
-import Header from './components/ui/Header';
-import ProtectedRoute from './components/ProtectedRoute';
 import { setUser, fetchCurrentUser } from './store/slices/authSlice';
+
+import {
+  Header,
+  ProtectedRoute
+} from 'components';
+
 import { 
   HomePage,
   LoginPage,
-  AdminPage,
+  RegisterPage,
   StoragePage,
-  RegisterPage 
-} from './pages';
+  AdminPage 
+} from 'pages';
 
 import './index.css';
 

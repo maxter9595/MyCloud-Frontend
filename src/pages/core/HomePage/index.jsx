@@ -4,7 +4,6 @@ import { useSelector } from 'react-redux';
 // import Cloud from '../assets/gin_mycloud.png';
 import Cloud from 'assets/png/gin_mycloud.png';
 
-
 /**
  * Component for the main
  * page of the application.

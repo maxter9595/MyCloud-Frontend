@@ -10,7 +10,6 @@ import { useSelector, useDispatch } from 'react-redux';
 
 import { fetchUsers } from 'store/slices/usersSlice';
 import usersApi from 'api/users';
-
 import  {
   UserTable,
   CreateAdminForm

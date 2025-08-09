@@ -12,9 +12,16 @@ import {
   FaChevronRight,
 } from "react-icons/fa";
 
-import { deleteUser, updateUser } from "../../../store/slices/usersSlice";
+import { deleteUser, updateUser } from "store/slices/usersSlice";
+import { ITEMS_PER_PAGE, MIN_GB_LIMIT, MAX_GB_LIMIT } from "constants/index.js";
+import { validateNumber, validateRange } from "utils/validators.js";
 
-const ITEMS_PER_PAGE = 3;
+[
+    { name: 'ITEMS_PER_PAGE', value: ITEMS_PER_PAGE, integer: true },
+    { name: 'MIN_GB_LIMIT', value: MIN_GB_LIMIT },
+    { name: 'MAX_GB_LIMIT', value: MAX_GB_LIMIT }
+].forEach(({ name, value, integer }) => validateNumber(name, value, integer));
+validateRange('MIN_GB_LIMIT', MIN_GB_LIMIT, 'MAX_GB_LIMIT', MAX_GB_LIMIT);
 
 const UserTable = ({ users, isMobile }) => {
   const dispatch = useDispatch();
@@ -26,7 +33,6 @@ const UserTable = ({ users, isMobile }) => {
   const [storageLimitError, setStorageLimitError] = useState("");
   const [, setIsDeleting] = useState(false);
 
-  
   const totalPages = Math.ceil(users.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
@@ -99,12 +105,12 @@ const UserTable = ({ users, isMobile }) => {
       setStorageLimitError("Введите корректное число");
       return false;
     }
-    if (limitGB < 0.1) {
-      setStorageLimitError("Минимальный лимит - 0.1 GB");
+    if (limitGB < MIN_GB_LIMIT) {
+      setStorageLimitError(`Минимальный лимит - ${MIN_GB_LIMIT} GB`);
       return false;
     }
-    if (limitGB > 1000) {
-      setStorageLimitError("Максимальный лимит - 1000 GB");
+    if (limitGB > MAX_GB_LIMIT) {
+      setStorageLimitError(`Максимальный лимит - ${MAX_GB_LIMIT} GB`);
       return false;
     }
     setStorageLimitError("");

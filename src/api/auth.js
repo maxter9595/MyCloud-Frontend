@@ -10,9 +10,10 @@ const authApi = {
    * @returns {Promise} The API 
    * response from the login request.
    */
-  login: (credentials) => api.post(
+  login: (credentials, signal) => api.post(
     '/auth/login/',
-    credentials
+    credentials,
+    { signal }
   ),
 
   /**
@@ -24,9 +25,10 @@ const authApi = {
    * @returns {Promise} The API response 
    * from the register request.
    */
-  register: (userData) => api.post(
+  register: (userData, signal) => api.post(
     '/auth/register/',
-    userData
+    userData,
+    { signal }
   ),
 
   /**
@@ -36,8 +38,11 @@ const authApi = {
    * @returns {Promise} The API 
    * response from the logout request.
    */
-  logout: () => api.post(
-    '/auth/logout/'),
+  logout: (signal) => api.post(
+    '/auth/logout/',
+    {},
+    { signal }
+  ),
 
   /**
    * Sends a GET request to the user 
@@ -46,8 +51,9 @@ const authApi = {
    * @returns {Promise} The API 
    * response from the user request.
    */
-  getMe: () => api.get(
-    '/auth/users/me/'
+  getMe: (signal) => api.get(
+    '/auth/users/me/',
+    { signal }
   ),
 };
 

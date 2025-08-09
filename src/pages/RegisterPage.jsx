@@ -21,6 +21,7 @@ const RegisterPage = () => {
   const navigate = useNavigate();
 
   const handleSubmit = async (values) => {
+    console.log('Registration data:', values);
     try {
       await dispatch(
         register(values)
@@ -28,11 +29,12 @@ const RegisterPage = () => {
 
       navigate('/storage');
 
-    } catch (err) {
-      console.error(
-        'Registration failed:', 
-        err
-      );
+    } catch (error) {
+      if (error && error.response && error.response.data) {
+        console.error('Registration error details:', error.response.data);
+      } else {
+        console.error('Registration error details:', error);
+      }
     }
   };
 

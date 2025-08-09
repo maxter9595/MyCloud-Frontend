@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import api from '../../api/auth';
+// import api from '../../api/auth';
+import authApi from '../../api/auth';
 import { secureStoreToken, removeSecureToken } from '../../utils/security';
 
 
@@ -16,10 +17,12 @@ export const register = createAsyncThunk(
   'auth/register',
   async (userData, { rejectWithValue, signal }) => {
     try {
-      const response = await api.post('/auth/register/', userData, { signal });
+      // const response = await api.post('/auth/register/', userData, { signal });
+      const response = await authApi.register(userData, signal);
       secureStoreToken(response.data.token);
       return response.data;
     } catch (err) {
+      console.log(err);
       return rejectWithValue(err.response?.data || 'Ошибка регистрации');
     }
   }
@@ -40,7 +43,8 @@ export const fetchCurrentUser = createAsyncThunk(
   'auth/fetchCurrentUser',
   async (_, { rejectWithValue, signal }) => {
     try {
-      const response = await api.get('/auth/users/me/', { signal });
+      // const response = await api.get('/auth/users/me/', { signal });
+      const response = await authApi.getMe({ signal });
       return response.data;
     } catch (err) {
       localStorage.removeItem('token');
@@ -60,7 +64,8 @@ export const login = createAsyncThunk(
   'auth/login',
   async (credentials, { rejectWithValue, signal }) => {
     try {
-      const response = await api.post('/auth/login/', credentials, { signal });
+      // const response = await api.post('/auth/login/', credentials, { signal });
+      const response = await authApi.login(credentials, signal);
       secureStoreToken(response.data.token);
       return response.data;
     } catch (err) {

@@ -1,15 +1,17 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import api from '../../api/files';
+// import api from '../../api/files';
+import filesApi from '../../api/files';  
 
 export const fetchFiles = createAsyncThunk(
   'files/fetchFiles',
   async (userId, { rejectWithValue, signal }) => {
     try {
-      const params = userId ? { user_id: userId } : {};
-      const response = await api.get('/storage/files/', { params, signal });
+      // const params = userId ? { user_id: userId } : {};
+      // const response = await api.get('/storage/files/', { params, signal });
+      const response = await filesApi.getFiles(userId, signal);
       return response.data;
     } catch (err) {
-      return rejectWithValue(err.response.data);
+      return rejectWithValue(err.response?.data || 'Ошибка при загрузке файлов');
     }
   }
 );
@@ -18,10 +20,11 @@ export const deleteFile = createAsyncThunk(
   'files/deleteFile',
   async (id, { rejectWithValue, signal }) => {
     try {
-      await api.delete(`/storage/files/${id}/`, { signal });
+      await filesApi.deleteFile(id, signal);
+      // await api.delete(`/storage/files/${id}/`, { signal });
       return id;
     } catch (err) {
-      return rejectWithValue(err.response.data);
+      return rejectWithValue(err.response?.data || 'Ошибка при удалении файла');
     }
   }
 );
@@ -30,11 +33,13 @@ export const downloadFile = createAsyncThunk(
   'files/downloadFile',
   async (id, { rejectWithValue, signal }) => {
     try {
-      const response = await api.get(`/storage/files/${id}/download/`, {
-        responseType: 'blob',
-        headers: { 'Accept': 'application/octet-stream' },
-        signal
-      });
+      // const response = await api.get(`/storage/files/${id}/download/`, {
+      //   responseType: 'blob',
+      //   headers: { 'Accept': 'application/octet-stream' },
+      //   signal
+      // });
+
+      const response = await filesApi.downloadFile(id, signal);
       return response.data;
     } catch (err) {
       return rejectWithValue(err.response?.data || 'Ошибка скачивания файла');
@@ -46,11 +51,12 @@ export const uploadFile = createAsyncThunk(
   'files/uploadFile',
   async ({ formData, onUploadProgress }, { rejectWithValue, signal }) => {
     try {
-      const response = await api.post('/storage/files/', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-        onUploadProgress,
-        signal
-      });
+      // const response = await api.post('/storage/files/', formData, {
+      //   headers: { 'Content-Type': 'multipart/form-data' },
+      //   onUploadProgress,
+      //   signal
+      // });
+      const response = await filesApi.uploadFile(formData, { onUploadProgress, signal });
       return response.data;
     } catch (err) {
       return rejectWithValue(err.response?.data?.error || err.message || 'Ошибка загрузки файла');
@@ -62,10 +68,11 @@ export const updateFile = createAsyncThunk(
   'files/updateFile',
   async ({ id, data }, { rejectWithValue, signal }) => {
     try {
-      const response = await api.patch(`/storage/files/${id}/`, data, { signal });
+      // const response = await api.patch(`/storage/files/${id}/`, data, { signal });
+      const response = await filesApi.updateFile(id, data, signal);
       return response.data;
     } catch (err) {
-      return rejectWithValue(err.response.data);
+      return rejectWithValue(err.response.data || 'Ошибка обновления файла');
     }
   }
 );

@@ -1,85 +1,27 @@
 import api from './index';
 
 const filesApi = {
-  /**
-   * Get list of files for given user 
-   * (or all users if no user ID is given).
-   * 
-   * @param {number} [userId] - ID 
-   * of user to get files for
-   * @returns {Promise<AxiosResponse>} - Promise
-   * resolving to Axios response
-   */
-  getFiles: (userId = null) => {
+  getFiles: (userId = null, signal) => {
     const params = userId ? { user_id: userId } : {};
-    return api.get(
-      '/storage/files/', 
-      { params }
-    );
+    return api.get('/storage/files/', { params, signal });
   },
 
-  /**
-   * Uploads a file to the server.
-   * 
-   * @param {FormData} formData - The form 
-   * data containing the file to be uploaded.
-   * @returns {Promise<AxiosResponse>} - Promise 
-   * resolving to the server response.
-   */
-  uploadFile: (formData) => api.post(
-    '/storage/files/', 
-      formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      }
-    }
-  ),
+  uploadFile: (formData, { onUploadProgress, signal } = {}) => 
+    api.post('/storage/files/', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      onUploadProgress,
+      signal,
+    }),
 
-  /**
-   * Deletes a file from the server.
-   * 
-   * @param {number} id - ID 
-   * of the file to be deleted
-   * @returns {Promise<AxiosResponse>} - Promise 
-   * resolving to the server response
-   */
-  deleteFile: (id) => api.delete(
-    `/storage/files/${id}/`
-  ),
+  deleteFile: (id, signal) => api.delete(`/storage/files/${id}/`, { signal }),
 
-  /**
-   * Downloads a file from the server.
-   * 
-   * @param {number} id - ID 
-   * of the file to be downloaded
-   * @returns {Promise<AxiosResponse>} - Promise 
-   * resolving to the server response. The response 
-   * data is a blob containing the file contents.
-   */
-  downloadFile: (id) => api.get(
-    `/storage/files/${id}/download/`, 
-    {
-      responseType: 'blob',
-      headers: {
-        'Accept': 'application/octet-stream'
-      }
-    }
-  ),
+  downloadFile: (id, signal) => api.get(`/storage/files/${id}/download/`, {
+    responseType: 'blob',
+    headers: { 'Accept': 'application/octet-stream' },
+    signal,
+  }),
 
-  /**
-   * Updates a file on the server.
-   * 
-   * @param {number} id - ID 
-   * of the file to be updated
-   * @param {Object} data - Object 
-   * containing data to be updated
-   * @returns {Promise<AxiosResponse>} - Promise 
-   * resolving to the server response
-   */
-  updateFile: (id, data) => api.patch(
-    `/storage/files/${id}/`, 
-    data
-  ),
+  updateFile: (id, data, signal) => api.patch(`/storage/files/${id}/`, data, { signal }),
 };
 
 export default filesApi;

@@ -16,7 +16,7 @@ import {
   RegisterPage 
 } from './pages';
 
-import './App.css';
+import './index.css';
 
 function App() {
   const dispatch = useDispatch();

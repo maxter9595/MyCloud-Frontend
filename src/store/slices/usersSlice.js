@@ -13,10 +13,11 @@ export const fetchUsers = createAsyncThunk(
   'users/fetchUsers',
   async (_, { rejectWithValue, signal }) => {
     try {
-      const response = await api.get('/auth/users/', { signal });
+      // const response = await api.get('/auth/users/', { signal });
+      const response = await api.getUsers(signal);
       return response.data;
     } catch (err) {
-      return rejectWithValue(err.response.data);
+      return rejectWithValue(err.response?.data || err.message);
     }
   }
 );
@@ -32,10 +33,11 @@ export const deleteUser = createAsyncThunk(
   'users/deleteUser',
   async (id, { rejectWithValue, signal }) => {
     try {
-      await api.delete(`/auth/users/${id}/`, { signal });
+      // await api.delete(`/auth/users/${id}/`, { signal });
+      await api.deleteUser(id, signal);
       return id;
     } catch (err) {
-      return rejectWithValue(err.response.data);
+      return rejectWithValue(err.response?.data || err.message);
     }
   }
 );
@@ -53,10 +55,11 @@ export const updateUser = createAsyncThunk(
   'users/updateUser',
   async ({ id, data }, { rejectWithValue, signal }) => {
     try {
-      const response = await api.patch(`/auth/users/${id}/`, data, { signal });
+      // const response = await api.patch(`/auth/users/${id}/`, data, { signal });
+      const response = await api.updateUser(id, data, signal);
       return response.data;
     } catch (err) {
-      return rejectWithValue(err.response.data);
+      return rejectWithValue(err.response?.data || err.message);
     }
   }
 );

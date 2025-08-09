@@ -53,6 +53,7 @@ const authApi = {
    */
   getMe: (signal) => api.get(
     '/auth/users/me/',
+    {},
     { signal }
   ),
 };

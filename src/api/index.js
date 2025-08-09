@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { getSecureToken } from '../utils/security';
 
 /**
  * Axios instance with base
@@ -43,7 +44,8 @@ getCSRFToken();
  * 3. Adds AbortSignal to requests
  */
 api.interceptors.request.use(async (config) => {
-  const token = localStorage.getItem('token');
+  // const token = localStorage.getItem('token');
+  const token = getSecureToken();
 
   if (token) {
     config.headers.Authorization = `Token ${token}`;
@@ -72,6 +74,7 @@ api.interceptors.request.use(async (config) => {
 
   // Добавляем AbortSignal если он передан в config
   if (config.signal) {
+    // eslint-disable-next-line
     config.signal = config.signal;
   }
 

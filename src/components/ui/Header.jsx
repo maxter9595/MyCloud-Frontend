@@ -15,6 +15,7 @@ const Header = memo(() => {
 
   const handleLogout = () => {
     dispatch(logout());
+    navigate('/');
   };
 
   const handleLogoClick = (e) => {

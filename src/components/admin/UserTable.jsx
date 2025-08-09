@@ -14,7 +14,7 @@ import {
 
 import { deleteUser, updateUser } from "../../store/slices/usersSlice";
 
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 3;
 
 const UserTable = ({ users, isMobile }) => {
   const dispatch = useDispatch();
@@ -24,7 +24,8 @@ const UserTable = ({ users, isMobile }) => {
   const [newStorageLimit, setNewStorageLimit] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [storageLimitError, setStorageLimitError] = useState("");
-  const [setIsDeleting] = useState(false);
+  const [, setIsDeleting] = useState(false);
+
   
   const totalPages = Math.ceil(users.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;

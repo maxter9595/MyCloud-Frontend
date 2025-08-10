@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 
-import { clearError } from '../../../../store/slices/authSlice';
+import { clearError } from 'store/slices/authSlice';
 
 
 /**

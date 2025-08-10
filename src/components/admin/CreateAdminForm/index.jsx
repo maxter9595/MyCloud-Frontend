@@ -5,7 +5,7 @@ import {
     validateUsername,
     validatePassword,
     validateEmail,
-} from "../../../utils/validators";
+} from "utils/validators";
 
 /**
  * Form for creating a new admin user.

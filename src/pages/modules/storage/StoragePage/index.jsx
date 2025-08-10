@@ -3,10 +3,6 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { FaSpinner, FaUpload, FaTimes } from 'react-icons/fa';
 
-// import FileList from '../components/files/FileList';
-// import StorageInfo from '../components/files/StorageInfo';
-// import { fetchFiles, uploadFile } from '../../../../store/slices/filesSlice';
-
 import {
   fetchFiles,
   uploadFile

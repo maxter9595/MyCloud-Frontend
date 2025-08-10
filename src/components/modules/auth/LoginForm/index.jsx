@@ -4,7 +4,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Formik, Field, ErrorMessage } from 'formik';
 import { useDispatch, useSelector } from 'react-redux';
 
-// import { login } from '../../store/slices/authSlice';
 import { login } from 'store/slices/authSlice';
 
 /**

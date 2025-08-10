@@ -1,10 +1,6 @@
-// frontend\src\App.js
 import { useEffect, useRef, Suspense } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Routes, Route, useNavigate } from 'react-router-dom';
-
-// import Header from './components/core/ui/Header';
-// import ProtectedRoute from './components/core/routes/ProtectedRoute';
 
 import api from './api';
 import { selectIsAuthenticated } from './store/selectors';

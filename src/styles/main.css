@@ -1,6 +1,5 @@
-/* Variables and base styles */
 @import './utils/animations.css';
-@import './utils/utilities.css';
+@import './utils/notifications.css';
 @import './utils/pagination.css';
 
 /* Components */

@@ -4,7 +4,10 @@
     "paths": {
       "store/*": ["store/*"],
       "components/*": ["components/*"],
-      "utils/*": ["utils/*"]
+      "utils/*": ["utils/*"],
+      "pages/*": ["pages/*"],
+      "api/*": ["api/*"],
+      "constants/*": ["constants/*"]
     }
   }
 }

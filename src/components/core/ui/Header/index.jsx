@@ -3,10 +3,6 @@ import { memo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 
-// import { logout } from '../../../../store/slices/authSlice';
-// import { selectIsAuthenticated, selectCurrentUser } from '../../../../store/selectors';
-// import { ReactComponent as Logo } from '../../../../assets/logo.svg';
-
 import { logout } from 'store/slices/authSlice';
 import { selectIsAuthenticated, selectCurrentUser } from 'store/selectors';
 import { ReactComponent as Logo } from 'assets/svg/logo.svg';

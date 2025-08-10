@@ -9,15 +9,6 @@ import {
   FaInfoCircle 
 } from 'react-icons/fa';
 
-// import { useDebounce } from '../../hooks/useDebounce';
-// import api from '../../api';
-
-// import { 
-//   validateUsername, 
-//   validatePassword, 
-//   validateEmail 
-// } from '../../utils/validators';
-
 import api from 'api';
 import { useDebounce } from 'hooks/useDebounce';
 

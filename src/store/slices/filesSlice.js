@@ -1,13 +1,10 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-// import api from '../../api/files';
-import filesApi from '../../api/files';  
+import filesApi from 'api/files';  
 
 export const fetchFiles = createAsyncThunk(
   'files/fetchFiles',
   async (userId, { rejectWithValue, signal }) => {
     try {
-      // const params = userId ? { user_id: userId } : {};
-      // const response = await api.get('/storage/files/', { params, signal });
       const response = await filesApi.getFiles(userId, signal);
       return response.data;
     } catch (err) {

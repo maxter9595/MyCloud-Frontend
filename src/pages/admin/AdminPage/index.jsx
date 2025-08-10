@@ -3,11 +3,6 @@ import { FaPlus, FaKey } from 'react-icons/fa';
 import { useMediaQuery } from 'react-responsive';
 import { useSelector, useDispatch } from 'react-redux';
 
-// import usersApi from '../../../api/users';
-// import UserTable from '../../../components/admin/UserTable';
-// import { fetchUsers } from '../../../store/slices/usersSlice';
-// import CreateAdminForm from '../../../components/admin/CreateAdminForm';
-
 import { fetchUsers } from 'store/slices/usersSlice';
 import usersApi from 'api/users';
 import  {

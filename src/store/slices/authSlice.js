@@ -1,7 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-// import api from '../../api/auth';
-import authApi from '../../api/auth';
-import { secureStoreToken, removeSecureToken } from '../../utils/security';
+import authApi from 'api/auth';
+import { secureStoreToken, removeSecureToken } from 'utils/security';
 
 
 /**

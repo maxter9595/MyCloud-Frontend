@@ -7,7 +7,9 @@ import './index.css';
 import api from './api';
 import App from './App';
 import store from './store/store';
+import axios from 'axios';
 
+axios.defaults.withCredentials = true;
 
 /**
  * Fetches a CSRF token for protection 

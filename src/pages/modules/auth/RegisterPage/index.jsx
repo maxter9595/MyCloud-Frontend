@@ -2,10 +2,6 @@ import { Link } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
-// import { register } from '../../../../store/slices/authSlice';
-// import Notification from '../../../../components/core/ui/Notification';
-// import RegisterForm from '../components/auth/RegisterForm';
-
 import { register } from 'store/slices/authSlice';
 
 import {

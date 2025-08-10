@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState, memo } from 'react';
 import { useDispatch } from 'react-redux';
 import {
@@ -7,12 +8,6 @@ import {
   FaLink,
   FaSpinner
 } from 'react-icons/fa';
-
-// import {
-//   deleteFile,
-//   downloadFile,
-//   updateFile
-// } from '../../store/slices/filesSlice';
 
 import {
   deleteFile,

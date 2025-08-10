@@ -1,13 +1,21 @@
+// jest.config.js
 module.exports = {
-  testEnvironment: 'jsdom',
+  testEnvironment: 'jest-environment-jsdom',
   setupFilesAfterEnv: ['<rootDir>/src/setupTests.js'],
   moduleNameMapper: {
-    '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
-    '\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$': 
-      '<rootDir>/__mocks__/fileMock.js'
+    '^store/(.*)$': '<rootDir>/src/store/$1',
+    '^react-icons/fa$': '<rootDir>/node_modules/react-icons/fa',
+    '\\.(css|less|scss)$': 'identity-obj-proxy',
+    '^utils/(.*)$': '<rootDir>/src/utils/$1',
+    '^api/(.*)$': '<rootDir>/src/api/$1',
+    '^@store/(.*)$': '<rootDir>/src/store/$1'
   },
   transform: {
     '^.+\\.(js|jsx|ts|tsx)$': 'babel-jest',
   },
+  transformIgnorePatterns: [
+    // Add any packages that need to be transformed (excluding node_modules except these)
+    '/node_modules/(?!axios|other-module)'
+  ],
   testPathIgnorePatterns: ['/node_modules/', '/build/'],
 };
